@@ -1,0 +1,86 @@
+#!/usr/bin/env python2.7
+
+import os
+import sys
+import time
+import array
+import random
+
+baudrate = 38400
+ib2_timed = 105 #us
+state_machine_step = 3
+byte_time = 260 #us
+byte_count = 4
+device_num = 4
+sim_count = 3000
+
+def get_random(range):
+    return random.randint(0, range)
+
+# |<- previous timed ->|<- state machine consume ->|<---       window       ---->|
+#       ib2_timed         ib2_timed * sim_count         byte_time * byte_count
+#         105us                 105 * 3                       260 * 8
+def sim_time(devices, random_range, state_consume, window_step, window_count, limit):
+    for i in range(0, len(devices)):
+        if devices[i] == limit:
+            continue
+        random = get_random(random_range)
+        window_random = get_random(window_count) * window_step
+        devices[i] = random + state_consume + window_random
+        print devices[i]
+    return devices
+
+def is_enroll(devices, threshold):
+    sorted_list = sorted(devices)
+    print sorted_list[0]
+    print sorted_list[1]
+    return sorted_list[1] - sorted_list[0] > threshold
+
+def set_min_to_limit(devices, limit):
+    index = devices.index(min(devices))
+    devices[index] = limit
+    return devices
+
+def enroll_time(stack, devices):
+    print 'simulating enroll_time'
+    window = byte_time * byte_count
+    limit = ib2_timed * 4 + window + 1
+    times = 0
+    correct = 0
+
+    #for i in range(0, len(devices)):
+    while True:
+        times += 1
+        devices = sim_time(devices, ib2_timed, state_machine_step * ib2_timed, byte_time, byte_count, limit)
+        print '----------------------'
+        print devices
+        #stack = sim_time(stack, 0, state_machine_step * ib2_timed, 0, 0)
+        print '----------------------'
+        if is_enroll(devices, byte_time):
+            print "success"
+            devices = set_min_to_limit(devices, limit)
+            correct += 1
+            if correct == len(devices):
+                break
+        else:
+            print "fail"
+        print '\n'
+
+    print 'enroll time: ' + str(times)
+    return times
+
+def main():
+    count = sim_count
+    times = 0
+    print 'ib2 enrollment simulation'
+
+    while (count > 0):
+        devices = [0] * device_num
+        stack = [0]
+        times += enroll_time(stack, devices)
+        count -= 1
+
+    print 'Average: ' + str(times / sim_count)
+
+if __name__ == '__main__':
+    main()
