@@ -1,0 +1,34 @@
+#!/usr/bin/python3
+#coding:utf-8
+
+import os
+import sys
+import datetime
+import array
+import requests
+import urllib3
+
+from bs4 import BeautifulSoup
+from wxpy import *
+
+def wechat():
+    time = datetime.datetime.now()
+    bot = Bot(console_qr=True, cache_path=True)
+    bot.file_helper.send(time)
+    bot.enable_puid('wxpy_puid.pkl')
+    friend = bot.friends().search('李刚')[0]
+    friend.send('What the fuck, from python script')
+    friend.send(time)
+    print(friend.puid)
+
+def main():
+    print("scraper")
+    url = 'https://otcbtc.com/sell_offers?currency=eos&fiat_currency=cny&payment_type=all'
+    page = requests.get(url)
+    #print(response.text)
+    soup = BeautifulSoup(page.text, 'html.parser')
+    data_box = soup.find('div', attrs={'class': 'recommend-card__price'})
+    print(data_box)
+
+if __name__ == '__main__':
+    main()

@@ -10,9 +10,9 @@ baudrate = 38400
 ib2_timed = 105 #us
 state_machine_step = 3
 byte_time = 260 #us
-byte_count = 4
-device_num = 4
-sim_count = 3000
+byte_count = 32
+device_num = 32
+sim_count = 30
 
 def get_random(range):
     return random.randint(0, range)
@@ -66,7 +66,7 @@ def enroll_time(stack, devices):
             print "fail"
         print '\n'
 
-    print 'enroll time: ' + str(times)
+    print '\nenroll time: ' + str(times)
     return times
 
 def main():
@@ -80,7 +80,8 @@ def main():
         times += enroll_time(stack, devices)
         count -= 1
 
-    print 'Average: ' + str(times / sim_count)
+    print 'Average times: ' + str(times / sim_count)
+    print 'Elapse time: ' + str(times * byte_time * byte_count / 1000) + 'ms'
 
 if __name__ == '__main__':
     main()
